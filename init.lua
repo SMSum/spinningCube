@@ -288,18 +288,23 @@ local faces = {
   {5, 6, 2, 1}, -- Left face
 }
 
-lightSource = {-100, 100, 100}
+local lightSource = {-100, 100, 100}
 
 local term = require("term")
 
 term.clear()
  
+local min_shading = math.huge
+local max_shading = -math.huge
+
 function drawPixel(x, y, shading)
-  local sensitivity = 10 
+  local sensitivity = 5 
   shading = shading * sensitivity
 
-  local min_shading = 263
-  local max_shading = 275
+  -- Update the minimum and maximum shading values
+  min_shading = math.min(min_shading, shading)
+  max_shading = math.max(max_shading, shading)
+
   local shading_range = max_shading - min_shading
 
   local shading_ratio = (shading - min_shading) / shading_range
@@ -317,9 +322,13 @@ function drawPixel(x, y, shading)
 
   local final_palette_index = lower_shade * (1 - weight) + upper_shade * weight
   local printText = charString:sub(math.floor(final_palette_index + 1), math.floor(final_palette_index + 1))
-
+  gpu.set(1,1, "min_shading " .. min_shading)
+  gpu.set(1,2, "max_shading " .. max_shading)
+  gpu.set(1,3, "final_palette_index " .. final_palette_index)
+  gpu.set(1,4, "shading_number " .. shading)
   gpu.set(x, y, printText)
 end
+
 
 function calculateShading(normal, lightVector)
   local dotProduct = m.dot(normal, lightVector)
@@ -447,7 +456,6 @@ while running do
     connectPoints(vertex1, vertex2, vertex3, vertex4)
   end
 
-
   gpu.bitblt(0,1,1,w,h,buf)
   gpu.setActiveBuffer(0)
   gpu.freeBuffer(buffer)
@@ -456,7 +464,7 @@ while running do
   r = m.mul(r, m.rotateYXZ(speed, speed, 0))
 
   running = not keyboard.isKeyDown("c")
-  
+ 
 
 end
 
