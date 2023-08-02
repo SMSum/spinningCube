@@ -250,7 +250,7 @@ local c = m.mat4x4(true)
 local t = {...}
  
  
-speed = 3
+speed = 5
 running = true
 changed = true
 
@@ -259,7 +259,7 @@ changed = true
 
 local charString = "@#W$9876543210?!abc;:+=-,._"
 
-local total_shades = 27
+local total_shades = 17 --27
 local range = 2.5
 
 local points = {}
@@ -288,7 +288,27 @@ local faces = {
   {5, 6, 2, 1}, -- Left face
 }
 
-local lightSource = {-100, 100, 100}
+local color_palette_test = {
+  0xFFFFFF,
+  0xF0F0F0, 
+  0xE1E1E1, 
+  0xD2D2D2, 
+  0xC3C3C3, 
+  0xB4B4B4, 
+  0xA5A5A5, 
+  0x969696, 
+  0x878787, 
+  0x787878, 
+  0x696969, 
+  0x5A5A5A, 
+  0x4B4B4B, 
+  0x3C3C3C, 
+  0x2D2D2D, 
+  0x1E1E1E, 
+  0x0F0F0F
+}
+
+local lightSource = {0, 0, -range*4}
 
 local term = require("term")
 
@@ -298,7 +318,7 @@ local min_shading = math.huge
 local max_shading = -math.huge
 
 function drawPixel(x, y, shading)
-  local sensitivity = 5 
+  local sensitivity = 10 
   shading = shading * sensitivity
 
   -- Update the minimum and maximum shading values
@@ -322,10 +342,16 @@ function drawPixel(x, y, shading)
 
   local final_palette_index = lower_shade * (1 - weight) + upper_shade * weight
   local printText = charString:sub(math.floor(final_palette_index + 1), math.floor(final_palette_index + 1))
-  gpu.set(1,1, "min_shading " .. min_shading)
-  gpu.set(1,2, "max_shading " .. max_shading)
-  gpu.set(1,3, "final_palette_index " .. final_palette_index)
-  gpu.set(1,4, "shading_number " .. shading)
+  --gpu.set(1,1, "min_shading " .. min_shading)
+  --gpu.set(1,2, "max_shading " .. max_shading)
+  --gpu.set(1,3, "final_palette_index " .. final_palette_index)
+  --gpu.set(1,4, "shading_number " .. shading)
+  if color_palette_test[math.floor(final_palette_index)] == nil then
+    final_palette_index = 1
+  end
+  --print(final_palette_index)
+  --print(color_palette_test[math.floor(final_palette_index)])
+  gpu.setForeground(color_palette_test[math.floor(final_palette_index)])
   gpu.set(x, y, printText)
 end
 
